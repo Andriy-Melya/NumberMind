@@ -20,7 +20,7 @@ main_challenge_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Мій результат', callback_data='result_challenge')],
     [InlineKeyboardButton(text='Покинути челендж', callback_data='exit_challenge')]])
 
-main_menu_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+admin_menu_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Грати', callback_data='play_game')],
     [InlineKeyboardButton(text='Налаштування', callback_data='settings'), InlineKeyboardButton(text='Правила ГРИ', callback_data='help')],
     [InlineKeyboardButton(text='Challenge', callback_data='challenge')],

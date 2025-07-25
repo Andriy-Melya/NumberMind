@@ -1,13 +1,15 @@
 import asyncio
 
-import text, app.game, os
-from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
-from aiogram.filters import Command
 from aiogram import F, Router
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
+from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 
+import app.game
 import app.keyboards as kb
+import os
+import text
 
 router = Router()
 
@@ -21,13 +23,38 @@ class GameStates(StatesGroup):
     create_ch = State()
 
 
+async def delete_message_sleep(message: Message):
+    await asyncio.sleep(3)
+    try:
+        await message.delete()
+    except:
+        pass
+
+
+async def save_winner(username, name, tl_name=''):
+    file_name = f'winners_{name}.txt'
+    try:
+        with open(file_name, "r", encoding="utf-8") as file:
+            lines = file.readlines()
+            count = len(lines)
+    except FileNotFoundError:
+        count = 0
+    with open(file_name, "a", encoding="utf-8") as file:
+        file.write(f"{count + 1}. {username}; нік в телеграм - @{tl_name}\n")
+
 
 @router.message(Command('start'))
 async def cmd_start(message: Message):
+    await message.answer(text.st, reply_markup=kb.play_keyboard)
+
+
+@router.message(Command('admin'))
+async def cmd_start(message: Message):
     if message.from_user.id == 1154874808:
-        await message.answer(text.st, reply_markup=kb.main_menu_keyboard)
+        await message.answer(text.st, reply_markup=kb.admin_menu_keyboard)
     else:
-        await message.answer(text.st, reply_markup=kb.play_keyboard)
+        return
+
 
 @router.callback_query(F.data == 'play_game')
 async def start_game(callback: CallbackQuery, state: FSMContext):
@@ -36,19 +63,25 @@ async def start_game(callback: CallbackQuery, state: FSMContext):
     num = app.game.set_number(length)
     await state.update_data(secret_number=num, attempts=0, length=length)
 
-    await callback.message.answer(f"🎲 Я загадав {length}-значне число. Введи свою першу спробу:", reply_markup=ReplyKeyboardRemove())
+    await callback.message.answer(f"🎲 Я загадав {length}-значне число. Введи свою першу спробу:",
+                                  reply_markup=ReplyKeyboardRemove())
     await state.set_state(GameStates.playing)
+
 
 @router.callback_query(F.data == 'settings')
 async def settings(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     length = data.get("length", 3)
-    await callback.message.answer(f"🔢 Встановленна складність {length}-{'символів' if length > 4 else 'символи'}. \nМожете змінити складність гри (кількість цифр):", reply_markup=kb.setting_keyboard)
+    await callback.message.answer(
+        f"🔢 Встановленна складність {length}-{'символів' if length > 4 else 'символи'}. \nМожете змінити складність гри (кількість цифр):",
+        reply_markup=kb.setting_keyboard)
     await state.set_state(GameStates.choosing_length)
+
 
 @router.callback_query(F.data == 'help')
 async def start_game(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(text.hp, reply_markup=kb.play_keyboard)
+
 
 @router.callback_query(F.data == 'challenge')
 async def start_game(callback: CallbackQuery, state: FSMContext):
@@ -62,6 +95,7 @@ async def start_game(callback: CallbackQuery, state: FSMContext):
     else:
         await callback.message.answer(text.challenge_NO, reply_markup=kb.play_keyboard)
 
+
 @router.callback_query(F.data == 'result_challenge')
 async def start_game(callback: CallbackQuery, state: FSMContext):
     global name_challenge
@@ -72,8 +106,11 @@ async def start_game(callback: CallbackQuery, state: FSMContext):
     if len(ch_res) == 0:
         return
     for i in range(2, 10):
-        s += f"\n🔢 {i}-цифрових кодів:  {ch_res[i]} з {ch[i-2]}"
-    await callback.message.answer(s + "\n\n🏆 Якщо впораєшся — потрапиш у таблицю переможців! Запиши своє ім’я в історію NumberMind 💥", reply_markup=kb.play_keyboard)
+        s += f"\n🔢 {i}-цифрових кодів:  {ch_res[i]} з {ch[i - 2]}"
+    await callback.message.answer(
+        s + "\n\n🏆 Якщо впораєшся — потрапиш у таблицю переможців! Запиши своє ім’я в історію NumberMind 💥",
+        reply_markup=kb.play_keyboard)
+
 
 @router.callback_query(F.data == 'start_challenge')
 async def start_game(callback: CallbackQuery, state: FSMContext):
@@ -81,10 +118,12 @@ async def start_game(callback: CallbackQuery, state: FSMContext):
     await state.update_data(challenge_res=ch_res, task=name_challenge)
     await callback.message.answer('Челендж розпочато! Бажаю успіху', reply_markup=kb.play_keyboard)
 
+
 @router.callback_query(F.data == 'exit_challenge')
 async def challenge_exit(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.edit_text('Ви покинули челендж', reply_markup=kb.play_keyboard)
+
 
 @router.callback_query(F.data == 'table_result')
 async def print_table(callback: CallbackQuery, state: FSMContext):
@@ -97,6 +136,34 @@ async def print_table(callback: CallbackQuery, state: FSMContext):
         lines = 'Чекаємо на переможців.'
     await callback.message.answer(lines, reply_markup=kb.play_keyboard)
 
+
+@router.callback_query(F.data == 'create_challenge')
+async def create_challenge(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer('Введи складність челенджу')
+    await state.set_state(GameStates.create_ch)
+
+
+@router.callback_query(F.data == 'EXIT_challenge')
+async def start_game(callback: CallbackQuery, state: FSMContext):
+    global is_challenge, name_challenge
+    await callback.message.answer('Челендж завершено')
+    is_challenge = False
+    name_challenge = ''
+
+
+@router.callback_query(F.data == 'table_result_zero')
+async def table_result_zero(callback: CallbackQuery, state: FSMContext):
+    global name_challenge
+    file_name = f'winners_{name_challenge}.txt'
+    try:
+        os.remove(file_name)
+        await callback.message.answer(f"Таблицю результатів {file_name} успішно видалено.")
+    except FileNotFoundError:
+        await callback.message.answer(f"Таблицю результатів {file_name} не знайдено.")
+    except Exception as e:
+        await callback.message.answer(f"Сталася помилка при видаленні: {e}")
+
+
 @router.message(GameStates.choosing_length)
 async def process_setting(message: Message, state: FSMContext):
     try:
@@ -107,11 +174,13 @@ async def process_setting(message: Message, state: FSMContext):
         return
     if 2 <= guess <= 9:
         await state.update_data(length=int(guess))
-        await message.answer(f"Складність гри встановленна - {guess} {'символів' if guess > 4 else 'символи'}", reply_markup=ReplyKeyboardRemove())
+        await message.answer(f"Складність гри встановленна - {guess} {'символів' if guess > 4 else 'символи'}",
+                             reply_markup=ReplyKeyboardRemove())
         await state.set_state(None)
         await message.answer("Готовий зіграти з тобою у гру типу «Бики та корови» 🧠🔢", reply_markup=kb.play_keyboard)
     else:
-        await message.answer('Виберіть складність гри (кількість цифр у коді) від 2 до 9', reply_markup=kb.setting_keyboard)
+        await message.answer('Виберіть складність гри (кількість цифр у коді) від 2 до 9',
+                             reply_markup=kb.setting_keyboard)
 
 
 @router.message(GameStates.playing)
@@ -142,56 +211,14 @@ async def process_guess_one(message: Message, state: FSMContext):
             ch = data["task"]
             ch_result = '-'.join(map(str, ch_res))[4:]
             if ch == ch_result:
-                save_winner(message.from_user.full_name, ch, message.from_user.username)
-                await message.answer(f"Вітаю! Ти виконав умови челенджу і тебе внесено до таблиці результатів", reply_markup=kb.res_keyboard)
+                await save_winner(message.from_user.full_name, ch, message.from_user.username)
+                await message.answer(f"Вітаю! Ти виконав умови челенджу і тебе внесено до таблиці результатів",
+                                     reply_markup=kb.res_keyboard)
         await state.set_state(None)
         return
     await state.update_data(attempts=attempts)
     await message.delete()
     bot_message_id = await message.answer(f"{attempts}. {guess}  | {B}:{K}")
-
-async def delete_message_sleep(message: Message):
-    await asyncio.sleep(3)
-    try:
-        await message.delete()
-    except:
-        pass
-#------------------------------------------------------------------------
-
-def save_winner(username, name, tl_name=''):
-    file_name = f'winners_{name}.txt'
-    try:
-        with open(file_name, "r", encoding="utf-8") as file:
-            lines = file.readlines()
-            count = len(lines)
-    except FileNotFoundError:
-        count = 0
-    with open(file_name, "a", encoding="utf-8") as file:
-        file.write(f"{count + 1}. {username}; нік в телеграм - @{tl_name}\n")
-
-@router.callback_query(F.data == 'create_challenge')
-async def create_challenge(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer('Введи складність челенджу')
-    await state.set_state(GameStates.create_ch)
-
-@router.callback_query(F.data == 'EXIT_challenge')
-async def start_game(callback: CallbackQuery, state: FSMContext):
-    global is_challenge, name_challenge
-    await callback.message.answer('Челендж завершено')
-    is_challenge = False
-    name_challenge = ''
-
-@router.callback_query(F.data == 'table_result_zero')
-async def table_result_zero(callback: CallbackQuery, state: FSMContext):
-    global name_challenge
-    file_name = f'winners_{name_challenge}.txt'
-    try:
-        os.remove(file_name)
-        await callback.message.answer(f"Таблицю результатів {file_name} успішно видалено.")
-    except FileNotFoundError:
-        await callback.message.answer(f"Таблицю результатів {file_name} не знайдено.")
-    except Exception as e:
-        await callback.message.answer(f"Сталася помилка при видаленні: {e}")
 
 
 @router.message(GameStates.create_ch)
@@ -206,6 +233,3 @@ async def process_guess(message: Message, state: FSMContext):
     else:
         await message.answer('Щось пішло не так!')
         await state.clear()
-
-
-

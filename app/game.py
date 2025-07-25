@@ -1,5 +1,6 @@
 from random import shuffle
 
+
 def set_number(n):
     N = [str(i) for i in range(10)]
     shuffle(N)
@@ -7,12 +8,13 @@ def set_number(n):
         shuffle(N)
     return ''.join(N[:n])
 
+
 def is_norm(x, N):
     try:
         n = int(x)
     except:
         return False
-    if not(10 ** (N - 1) <= n <= 10 ** N):
+    if not (10 ** (N - 1) <= n <= 10 ** N):
         return False
     mas = []
     while n > 0:
@@ -23,6 +25,7 @@ def is_norm(x, N):
         else:
             mas.append(x)
     return True
+
 
 def bulls_and_cows(x, y):
     B, K = 0, 0
@@ -35,4 +38,3 @@ def bulls_and_cows(x, y):
         if X[i] == Y[i]:
             K += 1
     return B, K
-
