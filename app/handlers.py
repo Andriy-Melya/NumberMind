@@ -32,18 +32,18 @@ async def cmd_start(message: Message):
 @router.callback_query(F.data == 'play_game')
 async def start_game(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    lengs = data.get("lengs", 3)
-    num = app.game.set_number(lengs)
-    await state.update_data(secret_number=num, attempts=0, lengs=lengs)
+    length = data.get("length", 3)
+    num = app.game.set_number(length)
+    await state.update_data(secret_number=num, attempts=0, length=length)
 
-    await callback.message.answer(f"🎲 Я загадав {lengs}-значне число. Введи свою першу спробу:", reply_markup=ReplyKeyboardRemove())
+    await callback.message.answer(f"🎲 Я загадав {length}-значне число. Введи свою першу спробу:", reply_markup=ReplyKeyboardRemove())
     await state.set_state(GameStates.playing)
 
 @router.callback_query(F.data == 'settings')
 async def settings(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    lengs = data.get("lengs", 3)
-    await callback.message.answer(f"🔢 Встановленна складність {lengs}-{'символів' if lengs > 4 else 'символи'}. \nМожете змінити складність гри (кількість цифр):", reply_markup=kb.setting_keyboard)
+    length = data.get("length", 3)
+    await callback.message.answer(f"🔢 Встановленна складність {length}-{'символів' if length > 4 else 'символи'}. \nМожете змінити складність гри (кількість цифр):", reply_markup=kb.setting_keyboard)
     await state.set_state(GameStates.choosing_length)
 
 @router.callback_query(F.data == 'help')
@@ -62,7 +62,7 @@ async def start_game(callback: CallbackQuery, state: FSMContext):
     else:
         await callback.message.answer(text.challenge_NO, reply_markup=kb.play_keyboard)
 
-@router.callback_query(F.data == 'resault_challenge')
+@router.callback_query(F.data == 'result_challenge')
 async def start_game(callback: CallbackQuery, state: FSMContext):
     global name_challenge
     data = await state.get_data()
@@ -86,7 +86,7 @@ async def challenge_exit(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.edit_text('Ви покинули челендж', reply_markup=kb.play_keyboard)
 
-@router.callback_query(F.data == 'table_resault')
+@router.callback_query(F.data == 'table_result')
 async def print_table(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     file_name = f'winners_{data["task"]}.txt'
@@ -106,7 +106,7 @@ async def process_setting(message: Message, state: FSMContext):
                              reply_markup=kb.setting_keyboard)
         return
     if 2 <= guess <= 9:
-        await state.update_data(lengs=int(guess))
+        await state.update_data(length=int(guess))
         await message.answer(f"Складність гри встановленна - {guess} {'символів' if guess > 4 else 'символи'}", reply_markup=ReplyKeyboardRemove())
         await state.set_state(None)
         await message.answer("Готовий зіграти з тобою у гру типу «Бики та корови» 🧠🔢", reply_markup=kb.play_keyboard)
@@ -124,7 +124,7 @@ async def process_guess_one(message: Message, state: FSMContext):
         return
 
     data = await state.get_data()
-    N = data["lengs"]
+    N = data["length"]
     if not app.game.is_norm(guess, N):
         await message.delete()
         msg = await message.answer("Помилка вводу, спробуй ще раз", reply_markup=ReplyKeyboardRemove())
@@ -140,8 +140,8 @@ async def process_guess_one(message: Message, state: FSMContext):
             ch_res[N] += 1
             await state.update_data(challenge_res=ch_res)
             ch = data["task"]
-            ch_resault = '-'.join(map(str, ch_res))[4:]
-            if ch == ch_resault:
+            ch_result = '-'.join(map(str, ch_res))[4:]
+            if ch == ch_result:
                 save_winner(message.from_user.full_name, ch, message.from_user.username)
                 await message.answer(f"Вітаю! Ти виконав умови челенджу і тебе внесено до таблиці результатів", reply_markup=kb.res_keyboard)
         await state.set_state(None)

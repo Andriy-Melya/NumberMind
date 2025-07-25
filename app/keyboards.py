@@ -14,10 +14,10 @@ challenge_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Прийняти участь у челенжі', callback_data='start_challenge')]])
 
 res_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Таблиця результатів', callback_data='table_resault')]])
+    [InlineKeyboardButton(text='Таблиця результатів', callback_data='table_result')]])
 
 main_challenge_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Мій результат', callback_data='resault_challenge')],
+    [InlineKeyboardButton(text='Мій результат', callback_data='result_challenge')],
     [InlineKeyboardButton(text='Покинути челендж', callback_data='exit_challenge')]])
 
 main_menu_keyboard = InlineKeyboardMarkup(inline_keyboard=[
