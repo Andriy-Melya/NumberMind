@@ -1,6 +1,6 @@
 import asyncio
 
-import text, app.game
+import text, app.game, os
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.filters import Command
@@ -88,8 +88,8 @@ async def challenge_exit(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'table_result')
 async def print_table(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    file_name = f'winners_{data["task"]}.txt'
+    global name_challenge
+    file_name = f'winners_{name_challenge}.txt'
     try:
         with open(file_name, "r", encoding="utf-8") as file:
             lines = ''.join(file.readlines())
@@ -101,7 +101,7 @@ async def print_table(callback: CallbackQuery, state: FSMContext):
 async def process_setting(message: Message, state: FSMContext):
     try:
         guess = int(message.text.strip())
-    except:
+    except ValueError:
         await message.answer('Виберіть складність гри (кількість цифр у коді) від 2 до 9',
                              reply_markup=kb.setting_keyboard)
         return
@@ -180,6 +180,19 @@ async def start_game(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer('Челендж завершено')
     is_challenge = False
     name_challenge = ''
+
+@router.callback_query(F.data == 'table_result_zero')
+async def table_result_zero(callback: CallbackQuery, state: FSMContext):
+    global name_challenge
+    file_name = f'winners_{name_challenge}.txt'
+    try:
+        os.remove(file_name)
+        await callback.message.answer(f"Таблицю результатів {file_name} успішно видалено.")
+    except FileNotFoundError:
+        await callback.message.answer(f"Таблицю результатів {file_name} не знайдено.")
+    except Exception as e:
+        await callback.message.answer(f"Сталася помилка при видаленні: {e}")
+
 
 @router.message(GameStates.create_ch)
 async def process_guess(message: Message, state: FSMContext):

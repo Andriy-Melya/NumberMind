@@ -11,7 +11,7 @@ play_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Challenge', callback_data='challenge')]])
 
 challenge_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Прийняти участь у челенжі', callback_data='start_challenge')]])
+    [InlineKeyboardButton(text='Взяти участь у челенжі', callback_data='start_challenge')]])
 
 res_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Таблиця результатів', callback_data='table_result')]])
@@ -25,4 +25,7 @@ main_menu_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Налаштування', callback_data='settings'), InlineKeyboardButton(text='Правила ГРИ', callback_data='help')],
     [InlineKeyboardButton(text='Challenge', callback_data='challenge')],
     [InlineKeyboardButton(text='Створити ЧЕЛЕНДЖ', callback_data='create_challenge')],
-    [InlineKeyboardButton(text='Завершити ЧЕЛЕНДЖ', callback_data='EXIT_challenge')]])
+    [InlineKeyboardButton(text='Завершити ЧЕЛЕНДЖ', callback_data='EXIT_challenge')],
+    [InlineKeyboardButton(text='Таблиця результатів', callback_data='table_result')],
+    [InlineKeyboardButton(text='Скинути таблицю результатів', callback_data='table_result_zero')]
+])
