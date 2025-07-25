@@ -63,7 +63,7 @@ async def start_game(callback: CallbackQuery, state: FSMContext):
     num = app.game.set_number(length)
     await state.update_data(secret_number=num, attempts=0, length=length)
 
-    await callback.message.answer(f"🎲 Я загадав {length}-значне число. Введи свою першу спробу:",
+    await callback.message.answer(f"🎲 Я загадав секретний код довжиною\n{length} {'символів' if length > 4 else 'символи'}, спробуй відгадати",
                                   reply_markup=ReplyKeyboardRemove())
     await state.set_state(GameStates.playing)
 
@@ -177,7 +177,7 @@ async def process_setting(message: Message, state: FSMContext):
         await message.answer(f"Складність гри встановленна - {guess} {'символів' if guess > 4 else 'символи'}",
                              reply_markup=ReplyKeyboardRemove())
         await state.set_state(None)
-        await message.answer("Готовий зіграти з тобою у гру типу «Бики та корови» 🧠🔢", reply_markup=kb.play_keyboard)
+        await message.answer("Готовий зіграти з тобою у гру «Бики та корови» 🧠🔢", reply_markup=kb.play_keyboard)
     else:
         await message.answer('Виберіть складність гри (кількість цифр у коді) від 2 до 9',
                              reply_markup=kb.setting_keyboard)
@@ -203,7 +203,7 @@ async def process_guess_one(message: Message, state: FSMContext):
     attempts = data["attempts"] + 1
     B, K = app.game.bulls_and_cows(secret, guess)
     if K == N:
-        await message.answer(f"🎉 Ти вгадав число {secret} за {attempts} спроб!", reply_markup=kb.play_keyboard)
+        await message.answer(f"🎉 Вітаю! Ти вгадав число {secret} з {attempts}-го разу!", reply_markup=kb.play_keyboard)
         ch_res = data.get("challenge_res", [])
         if len(ch_res) != 0:
             ch_res[N] += 1
