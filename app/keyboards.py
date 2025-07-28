@@ -2,7 +2,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 
 setting_keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='2'), KeyboardButton(text='3'), KeyboardButton(text='4'), KeyboardButton(text='5')],
-    [KeyboardButton(text='6'), KeyboardButton(text='7'), KeyboardButton(text='8'), KeyboardButton(text='9')]
+    [KeyboardButton(text='6'), KeyboardButton(text='7'), KeyboardButton(text='8'), KeyboardButton(text='9'), KeyboardButton(text='10')]
 ], resize_keyboard=True)
 
 play_keyboard = InlineKeyboardMarkup(inline_keyboard=[

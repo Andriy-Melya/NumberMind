@@ -167,19 +167,19 @@ async def table_result_zero(callback: CallbackQuery, state: FSMContext):
 @router.message(GameStates.choosing_length)
 async def process_setting(message: Message, state: FSMContext):
     try:
-        guess = int(message.text.strip())
+        length = int(message.text.strip())
     except ValueError:
-        await message.answer('Виберіть складність гри (кількість цифр у коді) від 2 до 9',
+        await message.answer('Виберіть складність гри (кількість цифр у коді) від 2 до 10',
                              reply_markup=kb.setting_keyboard)
         return
-    if 2 <= guess <= 9:
-        await state.update_data(length=int(guess))
-        await message.answer(f"Складність гри встановленна - {guess} {'символів' if guess > 4 else 'символи'}",
+    if 2 <= length <= 10:
+        await state.update_data(length=int(length))
+        await message.answer(f"Складність гри встановленна - {length} {'символів' if length > 4 else 'символи'}",
                              reply_markup=ReplyKeyboardRemove())
         await state.set_state(None)
-        await message.answer("Готовий зіграти з тобою у гру «Бики та корови» 🧠🔢", reply_markup=kb.play_keyboard)
+        await message.answer("Готовий зіграти з тобою у гру «NumberMind» 💥🧠🔢", reply_markup=kb.play_keyboard)
     else:
-        await message.answer('Виберіть складність гри (кількість цифр у коді) від 2 до 9',
+        await message.answer('Виберіть складність гри (кількість цифр у коді) від 2 до 10',
                              reply_markup=kb.setting_keyboard)
 
 
@@ -212,8 +212,7 @@ async def process_guess_one(message: Message, state: FSMContext):
             ch_result = '-'.join(map(str, ch_res))[4:]
             if ch == ch_result:
                 await save_winner(message.from_user.full_name, ch, message.from_user.username)
-                await message.answer(f"Вітаю! Ти виконав умови челенджу і тебе внесено до таблиці результатів",
-                                     reply_markup=kb.res_keyboard)
+                await message.answer(f"Вітаю! Ти виконав умови челенджу і тебе внесено до таблиці результатів", reply_markup=kb.res_keyboard)
         await state.set_state(None)
         return
     await state.update_data(attempts=attempts)
