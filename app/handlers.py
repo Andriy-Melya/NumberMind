@@ -14,7 +14,7 @@ import text
 router = Router()
 
 is_challenge = True
-name_challenge = '1-1-1-0-0-0-0-0'
+name_challenge = '1-1-1-0-0-0-0-0-0'
 
 
 class GameStates(StatesGroup):
@@ -73,7 +73,7 @@ async def settings(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     length = data.get("length", 3)
     await callback.message.answer(
-        f"🔢 Встановленна складність {length}-{'символів' if length > 4 else 'символи'}. \nМожете змінити складність гри (кількість цифр):",
+        f"🔢 Встановлена складність {length}-{'символів' if length > 4 else 'символи'}. \nМожете змінити складність гри (кількість цифр):",
         reply_markup=kb.setting_keyboard)
     await state.set_state(GameStates.choosing_length)
 
@@ -105,8 +105,8 @@ async def start_game(callback: CallbackQuery, state: FSMContext):
     s = '🧠 Ти відгадав:'
     if len(ch_res) == 0:
         return
-    for i in range(2, 10):
-        s += f"\n🔢 {i}-цифрових кодів:  {ch_res[i]} з {ch[i - 2]}"
+    for i in range(2, 11):
+        s += f"\n🔢 {i:2}-цифрових кодів:  {ch_res[i]} з {ch[i - 2]}"
     await callback.message.answer(
         s + "\n\n🏆 Якщо впораєшся — потрапиш у таблицю переможців! Запиши своє ім’я в історію NumberMind 💥",
         reply_markup=kb.play_keyboard)
@@ -114,7 +114,7 @@ async def start_game(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == 'start_challenge')
 async def start_game(callback: CallbackQuery, state: FSMContext):
-    ch_res = [0] * 10
+    ch_res = [0] * 11
     await state.update_data(challenge_res=ch_res, task=name_challenge)
     await callback.message.answer('Челендж розпочато! Бажаю успіху', reply_markup=kb.play_keyboard)
 
@@ -174,7 +174,7 @@ async def process_setting(message: Message, state: FSMContext):
         return
     if 2 <= length <= 10:
         await state.update_data(length=int(length))
-        await message.answer(f"Складність гри встановленна - {length} {'символів' if length > 4 else 'символи'}",
+        await message.answer(f"Складність гри встановлена - {length} {'символів' if length > 4 else 'символи'}",
                              reply_markup=ReplyKeyboardRemove())
         await state.set_state(None)
         await message.answer("Готовий зіграти з тобою у гру «NumberMind» 💥🧠🔢", reply_markup=kb.play_keyboard)
@@ -224,8 +224,8 @@ async def process_guess_one(message: Message, state: FSMContext):
 async def process_guess(message: Message, state: FSMContext):
     global is_challenge, name_challenge
     ch = message.text.strip().split('-')
-    if len(ch) == 8:
-        await message.answer('Все гаразд. Челендж встановленно')
+    if len(ch) == 9:
+        await message.answer('Все гаразд. Челендж встановлено')
         is_challenge = True
         name_challenge = message.text.strip()
         await state.clear()

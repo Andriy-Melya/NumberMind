@@ -47,7 +47,7 @@ challenge_NO = """
 def challenge_YES(ch):
     data = ch.split('-')
     res = ''
-    for i in range(2, 10):
+    for i in range(2, 11):
         res += f"🔢 {i}-цифрових кодів: {data[i-2]} шт.\n"
 
     return (
